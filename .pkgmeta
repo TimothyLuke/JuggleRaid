@@ -1,0 +1,49 @@
+package-as: JuggleRaid
+
+externals:
+  libs/LibStub: https://repos.wowace.com/wow/libstub/trunk
+  libs/AceAddon-3.0:
+    url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceAddon-3.0
+    tag: latest
+  libs/AceBucket-3.0:
+    url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceBucket-3.0
+    tag: latest
+  libs/AceComm-3.0:
+    url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceComm-3.0
+    tag: latest
+  libs/AceDB-3.0:
+    url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceDB-3.0
+    tag: latest
+  libs/AceDBOptions-3.0:
+    url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceDBOptions-3.0
+    tag: latest
+  libs/AceGUI-3.0:
+    url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceGUI-3.0
+    tag: latest
+  libs/AceHook-3.0:
+    url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceHook-3.0
+    tag: latest
+  libs/AceLocale-3.0:
+    url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceLocale-3.0
+    tag: latest
+  libs/AceSerializer-3.0:
+    url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceSerializer-3.0
+    tag: latest
+  libs/AceTab-3.0:
+    url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceTab-3.0
+    tag: latest
+  libs/AceTimer-3.0:
+    url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceTimer-3.0
+    tag: latest
+  libs/CallbackHandler-1.0: https://repos.wowace.com/wow/callbackhandler/trunk/CallbackHandler-1.0
+  libs/LibDataBroker-1.1: https://github.com/tekkub/libdatabroker-1-1.git
+  libs/LibDBIcon-1.0: https://repos.wowace.com/wow/libdbicon-1-0/trunk/LibDBIcon-1.0
+  libs/LibDBCompartment: https://github.com/Meorawr/LibDBCompartment.git
+  libs/WagoAnalytics:
+    url: https://github.com/wagoio/WagoAnalyticsShim.git
+    branch: main
+
+ignore:
+  - .pkgmeta
+  - .vscode
+  - .github
