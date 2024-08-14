@@ -1,4 +1,4 @@
-## Interface: 110002, 110000
+## Interface: 110002, 110005
 ## Title: JuggleRaid fork of FixRaid
 ## Author: TWW Modifications by TimothyLuke.  Original Author denalb
 ## Version: 1.0.9
