@@ -6,43 +6,43 @@ local M = A:NewModule("damagerRole", "AceEvent-3.0", "AceTimer-3.0")
 A.damagerRole = M
 M.private = {
   needToInspect = {},
-  sessionCache = {melee={}, ranged={}, tank={}, healer={}},
+  sessionCache = {melee = {}, ranged = {}, tank = {}, healer = {}},
   dbGuildCache = false,
   dbNonGuildCache = false,
-  dbCleanedUp = false,
+  dbCleanedUp = false
 }
 local R = M.private
 
 M.CLASS_DAMAGER_ROLE = {
-  WARRIOR     = "melee",
+  WARRIOR = "melee",
   DEATHKNIGHT = "melee",
-  PALADIN     = "melee",
-  MONK        = "melee",
-  PRIEST      = "ranged",
+  PALADIN = "melee",
+  MONK = "melee",
+  PRIEST = "ranged",
   -- SHAMAN
   -- DRUID
-  ROGUE       = "melee",
-  MAGE        = "ranged",
-  WARLOCK     = "ranged",
+  ROGUE = "melee",
+  MAGE = "ranged",
+  WARLOCK = "ranged",
   -- HUNTER      = "ranged", -- comment out for WoW 7.0 (Legion)
-  DEMONHUNTER = "melee",
+  DEMONHUNTER = "melee"
 }
 -- We have to include tanks and healers to handle people who clear their role.
 local SPECID_ROLE = {
-  [262] = "ranged",  -- Elemental Shaman
-  [263] = "melee",   -- Enhancement Shaman
-  [264] = "healer",  -- Restoration Shaman
-  [102] = "ranged",  -- Balance Druid
-  [103] = "melee",   -- Feral Druid
-  [104] = "tank",    -- Guardian Druid
-  [105] = "healer",  -- Restoration Druid
-  [1468] = "healer",  --Preservation Evoker
+  [262] = "ranged", -- Elemental Shaman
+  [263] = "melee", -- Enhancement Shaman
+  [264] = "healer", -- Restoration Shaman
+  [102] = "ranged", -- Balance Druid
+  [103] = "melee", -- Feral Druid
+  [104] = "tank", -- Guardian Druid
+  [105] = "healer", -- Restoration Druid
+  [1468] = "healer", --Preservation Evoker
   -- Uncomment Hunter specs for WoW 7.0 (Legion):
-  [253] = "ranged",  -- Beast Mastery Hunter
-  [254] = "ranged",  -- Marksmanship Hunter
-  [255] = "melee",   -- Survival Hunter
+  [253] = "ranged", -- Beast Mastery Hunter
+  [254] = "ranged", -- Marksmanship Hunter
+  [255] = "melee", -- Survival Hunter
   [1467] = "ranged", --Devastation Evoker
-  [1473] = "ranged",  --Augmentation Evoker
+  [1473] = "ranged" --Augmentation Evoker
 }
 -- Lazily populated.
 local BUFF_ROLE = false
@@ -51,10 +51,25 @@ local DB_CLEANUP_GUILD_MAX_AGE_DAYS = 21
 local DB_CLEANUP_NONGUILD_MAX_AGE_DAYS = 1.5
 
 local format, ipairs, max, pairs, select, time, tostring = format, ipairs, max, pairs, select, time, tostring
-local GetSpecialization, GetSpecializationInfo, GetSpellInfo, InCombatLockdown, UnitBuff, UnitClass, UnitExists, UnitIsInMyGuild, UnitIsUnit = GetSpecialization, GetSpecializationInfo, GetSpellInfo, InCombatLockdown, UnitBuff, UnitClass, UnitExists, UnitIsInMyGuild, UnitIsUnit
+local GetSpecialization,
+  GetSpecializationInfo,
+  InCombatLockdown,
+  UnitBuff,
+  UnitClass,
+  UnitExists,
+  UnitIsInMyGuild,
+  UnitIsUnit =
+  GetSpecialization,
+  GetSpecializationInfo,
+  InCombatLockdown,
+  UnitBuff,
+  UnitClass,
+  UnitExists,
+  UnitIsInMyGuild,
+  UnitIsUnit
 
 local function cleanDbCache(cache, maxAgeDays)
-  local earliest = time() - (60*60*24*maxAgeDays)
+  local earliest = time() - (60 * 60 * 24 * maxAgeDays)
   local total, removed = 0, 0
   for _, role in ipairs({"melee", "ranged"}) do
     for fullName, when in pairs(cache[role]) do
@@ -65,7 +80,9 @@ local function cleanDbCache(cache, maxAgeDays)
       end
     end
   end
-  if A.DEBUG >= 1 then A.console:Debugf(M, "cleanDbCache removed %d/%d players older than %d days", removed, total, maxAgeDays) end
+  if A.DEBUG >= 1 then
+    A.console:Debugf(M, "cleanDbCache removed %d/%d players older than %d days", removed, total, maxAgeDays)
+  end
 end
 
 function M:OnEnable()
@@ -73,26 +90,30 @@ function M:OnEnable()
   M:RegisterMessage("FIXGROUPS_PLAYER_LEFT")
   -- Set local references to dbCaches, creating them if they don't exist.
   if not A.db.faction.damagerRoleGuildCache then
-    A.db.faction.damagerRoleGuildCache = {melee={}, ranged={}}
+    A.db.faction.damagerRoleGuildCache = {melee = {}, ranged = {}}
   end
   R.dbGuildCache = A.db.faction.damagerRoleGuildCache
   if not A.db.faction.damagerRoleNonGuildCache then
-    A.db.faction.damagerRoleNonGuildCache = {melee={}, ranged={}}
+    A.db.faction.damagerRoleNonGuildCache = {melee = {}, ranged = {}}
   end
   R.dbNonGuildCache = A.db.faction.damagerRoleNonGuildCache
   if not R.dbCleanedUp and not InCombatLockdown() then
-    R.dbCleanedUp = M:ScheduleTimer(function()
-      R.dbCleanedUp = true
-      if InCombatLockdown() or A.sorter:IsProcessing() then
-        -- Don't worry about trying to reschedule the timer. DB cleanup is
-        -- very low priority. Another session will get it done eventually.
-        return
-      end
-      cleanDbCache(R.dbGuildCache, DB_CLEANUP_GUILD_MAX_AGE_DAYS)
-      cleanDbCache(R.dbNonGuildCache, DB_CLEANUP_NONGUILD_MAX_AGE_DAYS)
-      -- Cleanup from legacy version of addon.
-      A.db.faction.dpsRoleCache = nil
-    end, DELAY_DB_CLEANUP)
+    R.dbCleanedUp =
+      M:ScheduleTimer(
+      function()
+        R.dbCleanedUp = true
+        if InCombatLockdown() or A.sorter:IsProcessing() then
+          -- Don't worry about trying to reschedule the timer. DB cleanup is
+          -- very low priority. Another session will get it done eventually.
+          return
+        end
+        cleanDbCache(R.dbGuildCache, DB_CLEANUP_GUILD_MAX_AGE_DAYS)
+        cleanDbCache(R.dbNonGuildCache, DB_CLEANUP_NONGUILD_MAX_AGE_DAYS)
+        -- Cleanup from legacy version of addon.
+        A.db.faction.dpsRoleCache = nil
+      end,
+      DELAY_DB_CLEANUP
+    )
   end
 end
 
@@ -112,7 +133,9 @@ function M:INSPECT_READY(event, guid)
     if not fullName then
       return
     end
-    if A.DEBUG >= 2 then A.console:Debugf(M, "unsolicited inspect ready for %s", name) end
+    if A.DEBUG >= 2 then
+      A.console:Debugf(M, "unsolicited inspect ready for %s", name)
+    end
   end
 
   -- Remove from needToInspect and add to sessionCache.
@@ -128,7 +151,9 @@ function M:INSPECT_READY(event, guid)
   for r, t in pairs(R.sessionCache) do
     t[fullName] = (r == role) and true or nil
   end
-  if A.DEBUG >= 2 then A.console:Debugf(M, "sessionCache add fullName=%s role=%s", fullName, role) end
+  if A.DEBUG >= 2 then
+    A.console:Debugf(M, "sessionCache add fullName=%s role=%s", fullName, role)
+  end
 
   -- Add to dbCache.
   if (role == "melee" or role == "ranged") and not UnitIsUnit(name, "player") then
@@ -145,7 +170,9 @@ function M:INSPECT_READY(event, guid)
     else
       R.dbNonGuildCache[role][fullName] = ts
     end
-    if A.DEBUG >= 1 then A.console:Debugf(M, "dbCache add fullName=%s role=%s isGuildmate=%s", fullName, role, tostring(isGuildmate)) end
+    if A.DEBUG >= 1 then
+      A.console:Debugf(M, "dbCache add fullName=%s role=%s isGuildmate=%s", fullName, role, tostring(isGuildmate))
+    end
   end
 
   -- Rebuild roster.
@@ -154,7 +181,9 @@ end
 
 function M:FIXGROUPS_PLAYER_LEFT(player)
   if not player.isUnknown and player.name then
-    if A.DEBUG >= 2 then A.console:Debugf(M, "cancelled needToInspect %s", player.name) end
+    if A.DEBUG >= 2 then
+      A.console:Debugf(M, "cancelled needToInspect %s", player.name)
+    end
     R.needToInspect[player.name] = false
   end
 end
@@ -162,15 +191,19 @@ end
 local function guessMeleeOrRangedFromBuffs(name)
   if not BUFF_ROLE then
     BUFF_ROLE = {}
-    for buff, role in pairs({
-      [188033]  = A.group.ROLE.MELEE,   -- Flask of the Seventh Demon
-      [251836]  = A.group.ROLE.MELEE,   -- Flask of the Currents
-      [188031]  = A.group.ROLE.RANGED,  -- Flask of the Whispered Pact
-      [251837]  = A.group.ROLE.RANGED,  -- Flask of Endless Fathoms
-      [24858]   = A.group.ROLE.RANGED,  -- Moonkin Form
-    }) do
-      buff = GetSpellInfo(buff)
-      if A.DEBUG >= 1 then A.console:Debugf(M, "buff=%s role=%s", tostring(buff), role) end
+    for buff, role in pairs(
+      {
+        [188033] = A.group.ROLE.MELEE, -- Flask of the Seventh Demon
+        [251836] = A.group.ROLE.MELEE, -- Flask of the Currents
+        [188031] = A.group.ROLE.RANGED, -- Flask of the Whispered Pact
+        [251837] = A.group.ROLE.RANGED, -- Flask of Endless Fathoms
+        [24858] = A.group.ROLE.RANGED -- Moonkin Form
+      }
+    ) do
+      buff = C_Spell.GetSpellInfo(buff).name
+      if A.DEBUG >= 1 then
+        A.console:Debugf(M, "buff=%s role=%s", tostring(buff), role)
+      end
       if buff then
         BUFF_ROLE[buff] = role
       end
@@ -181,7 +214,9 @@ local function guessMeleeOrRangedFromBuffs(name)
   end
   for buff, role in pairs(BUFF_ROLE) do
     if AuraUtil.FindAuraByName(buff, name) then
-      if A.DEBUG >= 1 then A.console:Debugf(M, "guessMeleeOrRangedFromBuffs found name=%s buff=%s role=%s", name, buff, role) end
+      if A.DEBUG >= 1 then
+        A.console:Debugf(M, "guessMeleeOrRangedFromBuffs found name=%s buff=%s role=%s", name, buff, role)
+      end
       return role
     end
   end
@@ -189,7 +224,9 @@ end
 
 function M:ForgetSession(name)
   local fullName = A.util:NameAndRealm(name)
-  if A.DEBUG >= 2 then A.console:Debugf(M, "forgetSession %s", fullName) end
+  if A.DEBUG >= 2 then
+    A.console:Debugf(M, "forgetSession %s", fullName)
+  end
   for _, c in pairs(R.sessionCache) do
     c[fullName] = nil
   end
@@ -247,14 +284,20 @@ function M:GetDamagerRole(player)
   if role then
     return role
   elseif R.dbGuildCache.melee[fullName] or R.dbNonGuildCache.melee[fullName] then
-    if A.DEBUG >= 1 then A.console:Debugf(M, "dbCache.melee found %s", fullName) end
+    if A.DEBUG >= 1 then
+      A.console:Debugf(M, "dbCache.melee found %s", fullName)
+    end
     return A.group.ROLE.MELEE
   elseif R.dbGuildCache.ranged[fullName] or R.dbNonGuildCache.ranged[fullName] then
-    if A.DEBUG >= 1 then A.console:Debugf(M, "dbCache.ranged found %s", fullName) end
+    if A.DEBUG >= 1 then
+      A.console:Debugf(M, "dbCache.ranged found %s", fullName)
+    end
     return A.group.ROLE.RANGED
   else
     -- Oh well.
-    if A.DEBUG >= 1 then A.console:Debugf(M, "unknown role: %s", fullName) end
+    if A.DEBUG >= 1 then
+      A.console:Debugf(M, "unknown role: %s", fullName)
+    end
     return A.group.ROLE.UNKNOWN
   end
 end
